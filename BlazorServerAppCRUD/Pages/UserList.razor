@@ -1,0 +1,86 @@
+﻿@page "/user-list"
+@using BlazorServerAppCRUD.Models;
+@using BlazorServerAppCRUD.Services;
+@inject IUserServices UserServices
+@inject NavigationManager NavigationManager
+
+<PageTitle>User List</PageTitle>
+
+<h1>User List</h1>
+<p>
+    <button class="btn btn-primary" @onclick="(async () => await NavigateToAddUser())">Add New User</button>
+</p>
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>User Id</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email Addressd</th>
+            <th>Created On</th>
+            <th>Delete</th>
+            <th>Update</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var std in userList)
+        {
+            <tr>
+                <td>@std.UserId</td>
+                <td>@std.FirstName</td>
+                <td>@std.LastName</td>
+                <td>@std.Email</td>
+                <td>@std.CreateDate</td>
+                <td>@std.DeleteDate</td>
+                <td><button type="button" @onclick="(async () => await DeleteUser(std.UserId))" class="btn btn-danger">Delete</button></td>
+                <td><button type="button" @onclick="(async () => await  NavigateToUpdateUser(std.UserId))" class="btn btn-primary">Edit</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@code {
+    protected List<UserEntity> userList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllUsers();
+    }
+
+    protected async Task<List<UserEntity>> GetAllUsers()
+    {
+        var res =  UserServices.GetAllUsers();
+
+        userList = res.ToList();
+        return userList;
+    }
+
+    protected async Task DeleteUser(int UserId)
+    {
+
+        UserServices.DeleteUser(UserId);
+        StateHasChanged();
+        await GetAllUsers();
+
+        //NavigationManager.NavigateTo("/");
+    }
+
+    protected async Task NavigateToUpdateUser(int UserId)
+    {
+        string pageURL = $"/update-User/{UserId}";
+
+        NavigationManager.NavigateTo(pageURL);
+    }
+
+    protected async Task NavigateToAddUser()
+    {
+        string pageURL = "/add-User";
+
+        NavigationManager.NavigateTo(pageURL);
+    }
+}
